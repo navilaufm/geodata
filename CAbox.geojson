@@ -1,0 +1,28 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:4326"
+          }
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-97, 6],
+            [-97, 25],
+            [-75, 25],
+            [-75, 6],
+            [-97, 6]
+          ]
+        ]
+      }
+    }
+  ]
+}
