@@ -1,0 +1,16 @@
+<VRTDataset rasterXSize="1405" rasterYSize="705">
+  <SRS dataAxisToSRSAxisMapping="2,1">GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AXIS["Latitude",NORTH],AXIS["Longitude",EAST],AUTHORITY["EPSG","4326"]]</SRS>
+  <GeoTransform> -1.2012500000000000e+02,  5.0000000000000003e-02,  0.0000000000000000e+00,  3.5125000000000000e+01,  0.0000000000000000e+00, -5.0000000000000003e-02</GeoTransform>
+  <VRTRasterBand dataType="Int16" band="1">
+    <NoDataValue>-32768</NoDataValue>
+    <ColorInterp>Gray</ColorInterp>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">elev_diff_05r.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="1400" RasterYSize="700" DataType="Int16" BlockXSize="1400" BlockYSize="2" />
+      <SrcRect xOff="0" yOff="0" xSize="1400" ySize="700" />
+      <DstRect xOff="2.48902172355685" yOff="2.49679800270414" xSize="1400" ySize="700" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+  </VRTRasterBand>
+</VRTDataset>
