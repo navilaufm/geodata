@@ -1,0 +1,101 @@
+id,nombre,pais,latitud,longitud,precipitacion_anual_mm
+MET001,Aeropuerto La Aurora,Guatemala,14.58,-90.52,1350
+MET002,Puerto Barrios Costera,Guatemala,15.72,-88.60,3200
+MET003,Quetzaltenango Altiplano,Guatemala,14.85,-91.52,1100
+MET004,Retalhuleu Sur,Guatemala,14.52,-91.68,2500
+MET005,Cobán Alta Verapaz,Guatemala,15.48,-90.38,3000
+MET006,El Remate Petén,Guatemala,17.02,-89.60,1650
+MET007,Zacapa Oriente,Guatemala,15.02,-89.93,750
+MET008,San Marcos Frontera,Guatemala,14.95,-92.15,2100
+MET009,Chiquimula Central,Guatemala,14.82,-89.53,980
+MET010,Livingston Marítima,Guatemala,15.80,-88.75,3150
+MET011,Belize City Puerto,Belice,17.49,-88.20,1850
+MET012,San Ignacio Cayo,Belice,17.15,-89.07,1550
+MET013,Dangriga Costera,Belice,16.96,-88.22,2200
+MET014,Punta Gorda Sur,Belice,16.09,-88.80,3500
+MET015,Orange Walk Norte,Belice,18.08,-88.58,1300
+MET016,San Salvador Urbano,El Salvador,13.69,-89.19,1750
+MET017,Acajutla Puerto,El Salvador,13.59,-89.83,1950
+MET018,Santa Ana Occidental,El Salvador,13.98,-89.55,1800
+MET019,San Miguel Oriente,El Salvador,13.48,-88.17,1500
+MET020,La Palma Montaña,El Salvador,14.30,-89.92,2200
+MET021,Usulután Central,El Salvador,13.34,-88.44,1600
+MET022,Zacatecoluca Planicie,El Salvador,13.53,-88.87,1850
+MET023,Suchitoto Lago,El Salvador,13.93,-89.02,1900
+MET024,Tegucigalpa Central,Honduras,14.10,-87.20,1100
+MET025,San Pedro Sula Valle,Honduras,15.50,-88.02,1850
+MET026,La Ceiba Atlántica,Honduras,15.77,-86.78,2800
+MET027,Roatán Islas,Honduras,16.32,-86.48,2200
+MET028,Comayagua Planicie,Honduras,14.45,-87.65,1050
+MET029,Choluteca Sur,Honduras,13.31,-87.17,1600
+MET030,Gracias Lempira,Honduras,14.58,-88.58,1500
+MET031,Juticalpa Olancho,Honduras,14.65,-86.20,1750
+MET032,Copán Ruinas,Honduras,14.84,-89.15,1800
+MET033,Puerto Cortés Marítimo,Honduras,15.82,-87.95,2600
+MET034,Managua Lago Xolotlán,Nicaragua,12.13,-86.25,1200
+MET035,León Occidental,Nicaragua,12.43,-86.88,1550
+MET036,Chinandega Norte,Nicaragua,12.63,-87.13,1800
+MET037,Bluefields Caribe,Nicaragua,12.00,-83.77,4500
+MET038,Matagalpa Montaña,Nicaragua,12.92,-85.92,2100
+MET039,Estelí Meseta,Nicaragua,13.08,-86.37,1400
+MET040,Granada Colonial,Nicaragua,11.93,-85.95,1350
+MET041,Rivas Istmo,Nicaragua,11.45,-85.83,1600
+MET042,San Carlos Río,Nicaragua,11.23,-84.78,3200
+MET043,Juigalpa Chontales,Nicaragua,12.10,-85.37,1800
+MET044,San José Metropolitano,Costa Rica,9.93,-84.08,1850
+MET045,Limón Caribeño,Costa Rica,9.99,-83.05,3500
+MET046,Puntarenas Pacífico,Costa Rica,9.97,-84.83,1650
+MET047,Liberia Guanacaste,Costa Rica,10.63,-85.45,1700
+MET048,Alajuela Valle Central,Costa Rica,10.02,-84.22,1900
+MET049,Cartago Oriental,Costa Rica,9.87,-83.92,2200
+MET050,Quepos Pacífico Sur,Costa Rica,9.44,-84.16,3600
+MET051,Golfito Península,Costa Rica,8.64,-83.17,4000
+MET052,Monteverde Bosque Nuboso,Costa Rica,10.30,-84.78,2800
+MET053,La Fortuna Volcán,Costa Rica,10.47,-84.65,3000
+MET054,Sarapiquí Llanuras,Costa Rica,10.43,-83.98,3800
+MET055,Tamarindo Costera,Costa Rica,10.30,-85.85,1500
+MET056,Ciudad de Panamá Centro,Panamá,8.98,-79.52,1750
+MET057,Colón Atlántico,Panamá,9.35,-79.88,3100
+MET058,David Chiriquí,Panamá,8.43,-82.43,2500
+MET059,Bocas del Toro Islas,Panamá,9.34,-82.25,3500
+MET060,Santiago Veraguas,Panamá,8.10,-80.98,1900
+MET061,Chitré Azuero,Panamá,7.95,-80.43,1100
+MET062,Penonomé Coclé,Panamá,8.48,-80.35,1700
+MET063,Boquete Tierras Altas,Panamá,8.78,-82.45,2800
+MET064,Puerto Armuelles Sur,Panamá,8.28,-82.87,3000
+MET065,Metetí Darién,Panamá,8.20,-78.00,2500
+MET066,Bogotá Aeropuerto El Dorado,Colombia,4.70,-74.14,850
+MET067,Medellín Valle de Aburrá,Colombia,6.25,-75.56,1700
+MET068,Cali Valle del Cauca,Colombia,3.43,-76.52,950
+MET069,Barranquilla Costa Caribe,Colombia,10.98,-74.80,750
+MET070,Cartagena de Indias,Colombia,10.40,-75.52,900
+MET071,Bucaramanga Santander,Colombia,7.12,-73.13,1200
+MET072,Cúcuta Frontera,Colombia,7.89,-72.48,800
+MET073,Pereira Eje Cafetero,Colombia,4.81,-75.70,2300
+MET074,Manizales Nevado,Colombia,5.07,-75.52,1900
+MET075,Santa Marta Sierra Nevada,Colombia,11.23,-74.20,550
+MET076,Ibagué Tolima,Colombia,4.43,-75.22,1450
+MET077,Neiva Huila,Colombia,2.93,-75.28,850
+MET078,Pasto Nariño,Colombia,1.20,-77.27,780
+MET079,Popayán Cauca,Colombia,2.44,-76.60,1800
+MET080,Villavicencio Llanos Orientales,Colombia,4.15,-73.63,4500
+MET081,Montería Córdoba,Colombia,8.75,-75.88,1300
+MET082,Sincelejo Sucre,Colombia,9.30,-75.40,1050
+MET083,Armenia Quindío,Colombia,4.53,-75.68,2100
+MET084,Tunja Boyacá,Colombia,5.53,-73.36,650
+MET085,Riohacha Guajira,Colombia,11.55,-72.90,400
+MET086,Leticia Amazonas,Colombia,-4.20,-69.94,3300
+MET087,Mocoa Putumayo,Colombia,1.15,-76.63,3500
+MET088,San Andrés Isla,Colombia,12.58,-81.70,1900
+MET089,Puerto Carreño Vichada,Colombia,6.18,-67.48,2400
+MET090,Quibdó Chocó,Colombia,5.69,-76.65,7800
+MET091,Palmira Industrial,Colombia,3.53,-76.30,1050
+MET092,Girardot Cundinamarca,Colombia,4.30,-74.80,1250
+MET093,Tuluá Valle,Colombia,4.08,-76.20,1200
+MET094,Buga Histórica,Colombia,3.90,-76.29,1080
+MET095,Buenaventura Pacífico,Colombia,3.87,-77.08,6500
+MET096,Yopal Casanare,Colombia,5.34,-73.62,2600
+MET097,Arauca Fronterizo,Colombia,7.09,-70.75,1600
+MET098,Popayán Sur,Colombia,2.40,-76.65,1750
+MET099,Sogamoso Boyacá,Colombia,5.72,-72.93,700
+MET100,Tumaco Pacífico Nariñense,Colombia,1.82,-78.77,390
