@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Interpolación Kriging</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        p {
+            max-width: 800px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        canvas {
+            border: 2px solid #3498db;
+            background-color: #ecf0f1;
+            margin-top: 20px;
+            cursor: crosshair; /* Cambia el cursor para indicar que es interactivo */
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+        .explanation {
+            margin-top: 30px;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .explanation h2 {
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .explanation p strong {
+            color: #e74c3c; /* Color para destacar palabras clave */
+        }
+    </style>
+</head>
+<body>
+    <h1>Demostración Conceptual de Interpolación Kriging</h1>
+    <p>
+        Haz clic en el lienzo para añadir <strong>puntos de observación</strong> con valores aleatorios.
+        Mueve el ratón (el <strong>punto azul</strong>) para ver el valor estimado y, lo más importante,
+        el <strong>círculo de incertidumbre</strong> (línea roja discontinua).
+        Un círculo pequeño indica mayor confianza en la estimación.
+    </p>
+
+    <canvas id="krigingCanvas" width="700" height="500"></canvas>
+
+    <div class="controls">
+        <button id="clearButton">Limpiar Puntos</button>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: blue;"></div>
+            <span>Punto a Estimar (donde queremos saber el valor)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: green;"></div>
+            <span>Puntos de Datos Conocidos (estaciones de observación)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="border: 2px dashed red; background-color: transparent;"></div>
+            <span>Círculo de Incertidumbre (tamaño inverso a la confianza)</span>
+        </div>
+    </div>
+
+    <div class="explanation">
+        <h2>¿Qué estás viendo?</h2>
+        <p>Este diagrama ilustra el concepto central de <strong>Kriging</strong>, un método de interpolación geoestadístico. A diferencia de otros métodos, Kriging no solo estima un valor en un punto desconocido, sino que también proporciona una <strong>medida de la incertidumbre</strong> de esa estimación.</p>
+        <p>Cuando mueves el cursor (el punto azul), se calcula un valor estimado (mostrado al lado del punto azul). Más importante aún, verás un <strong>círculo de incertidumbre</strong> (rojo discontinuo) alrededor del punto azul:</p>
+        <ul>
+            <li>Un <strong>círculo pequeño</strong> indica que hay puntos de datos cercanos y bien distribuidos, lo que resulta en una <strong>mayor confianza</strong> en la estimación.</li>
+            <li>Un <strong>círculo grande</strong> sugiere que el punto está lejos de los datos, o que los datos cercanos están agrupados en una dirección, lo que lleva a una <strong>menor confianza</strong> en la estimación.</li>
+        </ul>
+        <p>En un Kriging real, tanto el valor estimado como la incertidumbre se calculan usando un modelo de la <strong>autocorrelación espacial</strong> de los datos (el variograma), que describe cómo la similitud entre los valores disminuye con la distancia. Para esta demostración, el cálculo de la incertidumbre es una simplificación visual para destacar este aspecto único de Kriging.</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('krigingCanvas');
+        const ctx = canvas.getContext('2d');
+        const clearButton = document.getElementById('clearButton');
+
+        // Puntos de datos conocidos (x, y, valor)
+        let dataPoints = [];
+
+        // Función para generar un valor aleatorio entero
+        function getRandomValue() {
+            return Math.round(Math.random() * 100) + 50; // Valor entero entre 50 y 150
+        }
+
+        let estimatePoint = { x: canvas.width / 2, y: canvas.height / 2 };
+
+        // Potencia para el cálculo de interpolación (similar a IDW para simplificar el valor, no es Kriging real)
+        const INTERPOLATION_POWER = 2;
+
+        // Función para calcular el valor interpolado (simplificado, similar a IDW)
+        function calculateInterpolatedValue(estimateX, estimateY, dataPoints, power) {
+            let totalWeightedValue = 0;
+            let totalWeight = 0;
+
+            if (dataPoints.length === 0) return NaN; // No hay datos para interpolar
+
+            dataPoints.forEach(point => {
+                const dx = estimateX - point.x;
+                const dy = estimateY - point.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < 1e-6) { // Si el punto de estimación está exactamente sobre un punto de dato
+                    return point.value; // El valor es el del punto de dato
+                }
+
+                const weight = 1 / Math.pow(distance, power);
+                totalWeightedValue += point.value * weight;
+                totalWeight += weight;
+            });
+
+            if (totalWeight === 0) {
+                // Fallback si todos los puntos están exactamente en el punto de estimación (raro)
+                return dataPoints[0].value;
+            }
+
+            return totalWeightedValue / totalWeight;
+        }
+
+        // Función para calcular el radio de incertidumbre (conceptual para Kriging)
+        function calculateUncertaintyRadius(estimateX, estimateY, dataPoints) {
+            if (dataPoints.length === 0) return 150; // Gran incertidumbre si no hay datos
+
+            let minDistance = Infinity;
+            let sumInverseDistances = 0;
+            let numNearbyPoints = 0;
+            const nearbyThreshold = 150; // Distancia para considerar un punto "cercano"
+
+            dataPoints.forEach(point => {
+                const dx = estimateX - point.x;
+                const dy = estimateY - point.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                minDistance = Math.min(minDistance, distance);
+
+                if (distance < nearbyThreshold) {
+                    sumInverseDistances += (1 / (distance + 1)); // +1 para evitar división por cero
+                    numNearbyPoints++;
+                }
+            });
+
+            // Basado en la distancia mínima: cuanto más lejos, más incertidumbre
+            let radiusFromMinDist = minDistance * 0.5; // Escala para visualización
+
+            // Basado en la densidad de puntos cercanos: más puntos cercanos = menos incertidumbre
+            let radiusFromDensity = 100; // Base
+            if (numNearbyPoints > 0) {
+                radiusFromDensity = 100 / (numNearbyPoints * sumInverseDistances);
+            }
+            radiusFromDensity = Math.min(radiusFromDensity, 150); // Limitar el máximo
+
+            // Combinar ambos factores (ej. promedio)
+            let uncertainty = (radiusFromMinDist + radiusFromDensity) / 2;
+
+            // Limitar el radio para que sea visualmente manejable
+            return Math.min(Math.max(20, uncertainty), 150); // Min 20, Max 150
+        }
+
+
+        // Función para dibujar todo
+        function draw() {
+            // Limpiar el canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar los puntos de datos conocidos y sus valores
+            dataPoints.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = 'green';
+                ctx.fill();
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Dibujar el valor del texto con borde negro y relleno blanco
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+
+                const textOffsetX = 12;
+                const textOffsetY = 0;
+
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 3;
+                ctx.strokeText(point.value.toString(), point.x + textOffsetX, point.y + textOffsetY);
+
+                ctx.fillStyle = 'white';
+                ctx.fillText(point.value.toString(), point.x + textOffsetX, point.y + textOffsetY);
+            });
+
+            // Calcular el valor interpolado y el radio de incertidumbre
+            const interpolatedValue = calculateInterpolatedValue(estimatePoint.x, estimatePoint.y, dataPoints, INTERPOLATION_POWER);
+            const uncertaintyRadius = calculateUncertaintyRadius(estimatePoint.x, estimatePoint.y, dataPoints);
+
+            // Dibujar el punto a estimar (cursor del ratón)
+            ctx.beginPath();
+            ctx.arc(estimatePoint.x, estimatePoint.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = 'blue';
+            ctx.fill();
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Dibujar el valor interpolado al lado del punto azul
+            const interpolatedText = `Valor: ${interpolatedValue.toFixed(1)}`;
+            const interpolatedTextOffsetX = 18;
+            const interpolatedTextOffsetY = -15;
+
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 4;
+            ctx.strokeText(interpolatedText, estimatePoint.x + interpolatedTextOffsetX, estimatePoint.y + interpolatedTextOffsetY);
+
+            ctx.fillStyle = '#28a745'; // Color verde para el valor interpolado
+            ctx.fillText(interpolatedText, estimatePoint.x + interpolatedTextOffsetX, estimatePoint.y + interpolatedTextOffsetY);
+
+            // Dibujar el círculo de incertidumbre
+            if (!isNaN(uncertaintyRadius)) {
+                ctx.beginPath();
+                ctx.arc(estimatePoint.x, estimatePoint.y, uncertaintyRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]); // Línea discontinua
+                ctx.stroke();
+                ctx.setLineDash([]); // Restablecer a línea continua para futuros dibujos
+            }
+        }
+
+        // Añadir punto al hacer clic en el canvas
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            dataPoints.push({ x, y, value: getRandomValue() }); // Añadir valor aleatorio
+            draw();
+        });
+
+        // Actualizar la posición del punto a estimar al mover el ratón
+        canvas.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            estimatePoint.x = event.clientX - rect.left;
+            estimatePoint.y = event.clientY - rect.top;
+            draw(); // Redibujar el canvas
+        });
+
+        // Limpiar puntos al hacer clic en el botón
+        clearButton.addEventListener('click', () => {
+            dataPoints = [];
+            draw();
+        });
+
+        // Dibujar inicialmente
+        draw();
+    </script>
+</body>
+</html>

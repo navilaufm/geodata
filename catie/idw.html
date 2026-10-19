@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de IDW (Inverse Distance Weighting)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        p {
+            max-width: 800px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        canvas {
+            border: 2px solid #3498db;
+            background-color: #ecf0f1;
+            margin-top: 20px;
+            cursor: crosshair; /* Cambia el cursor para indicar que es interactivo */
+        }
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+        .explanation {
+            margin-top: 30px;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .explanation h2 {
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .explanation p strong {
+            color: #e74c3c; /* Color para destacar palabras clave */
+        }
+        /* Removed #calculatedValue styling as it's now drawn on canvas */
+    </style>
+</head>
+<body>
+    <h1>Demostración de IDW (Inverse Distance Weighting)</h1>
+    <p>
+        Mueve el ratón sobre el <strong>punto azul (punto a estimar)</strong> en el centro del diagrama.
+        Observa cómo el <strong>tamaño de los círculos concéntricos</strong> alrededor de los puntos de datos cambia:
+        Cuanto más cerca esté el punto azul de un punto de dato, mayor será el círculo,
+        representando una <strong>mayor influencia</strong> de ese punto de dato en la estimación.
+        También verás el <strong>valor interpolado calculado</strong> en tiempo real.
+    </p>
+
+    <canvas id="idwCanvas" width="700" height="500"></canvas>
+    <!-- Removed the div for calculated value -->
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: blue;"></div>
+            <span>Punto a Estimar (donde queremos saber el valor)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: green;"></div>
+            <span>Puntos de Datos Conocidos (con sus valores)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: rgba(255, 165, 0, 0.4);"></div>
+            <span>Círculos de Influencia (el tamaño indica la importancia)</span>
+        </div>
+    </div>
+
+    <div class="explanation">
+        <h2>¿Qué estás viendo?</h2>
+        <p>El diagrama ilustra el concepto central de <strong>IDW (Inverse Distance Weighting)</strong>: la idea de que los valores de los puntos conocidos más cercanos al punto que quieres estimar tienen una <strong>mayor influencia</strong> en la predicción final. Por el contrario, los puntos más lejanos tienen una <strong>menor influencia</strong>.</p>
+        <p>Cuando mueves el cursor (el punto azul) sobre el lienzo, calculamos la distancia entre este punto y cada uno de los puntos de datos verdes. Basándonos en esta distancia, dibujamos un círculo de influencia: <strong>cuanto menor es la distancia, mayor es el radio del círculo</strong>, simulando un "peso" o "importancia" más alto.</p>
+        <p>Además, ahora se muestra el <strong>valor interpolado calculado</strong> en tiempo real. Este valor es el resultado de un promedio ponderado de los valores de los puntos de datos conocidos, donde los pesos se determinan por la inversa de la distancia a una cierta potencia (en este caso, la potencia es 2, o inverso al cuadrado de la distancia).</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('idwCanvas');
+        const ctx = canvas.getContext('2d');
+        // const calculatedValueDisplay = document.getElementById('calculatedValue'); // No longer needed as it's drawn on canvas
+
+        // Puntos de datos conocidos (x, y, valor)
+        // Assign random integer values to the points
+        const dataPoints = [
+            { x: 100, y: 100, value: Math.round(Math.random() * 100) + 50 }, // Random integer value between 50 and 150
+            { x: 600, y: 150, value: Math.round(Math.random() * 100) + 50 },
+            { x: 200, y: 400, value: Math.round(Math.random() * 100) + 50 },
+            { x: 500, y: 350, value: Math.round(Math.random() * 100) + 50 },
+            { x: 350, y: 250, value: Math.round(Math.random() * 100) + 50 },
+            { x: 150, y: 300, value: Math.round(Math.random() * 100) + 50 },
+            { x: 550, y: 50, value: Math.round(Math.random() * 100) + 50 },
+            { x: 400, y: 450, value: Math.round(Math.random() * 100) + 50 },
+            { x: 50, y: 200, value: Math.round(Math.random() * 100) + 50 },
+            { x: 650, y: 300, value: Math.round(Math.random() * 100) + 50 }
+        ];
+
+        let estimatePoint = { x: canvas.width / 2, y: canvas.height / 2 };
+
+        // Power for IDW calculation (commonly 2 for inverse squared distance)
+        const IDW_POWER = 2;
+
+        // Function to calculate the interpolated value using IDW
+        function calculateIDW(estimateX, estimateY, dataPoints, power) {
+            let totalWeightedValue = 0;
+            let totalWeight = 0;
+
+            dataPoints.forEach(point => {
+                const dx = estimateX - point.x;
+                const dy = estimateY - point.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Handle the case where the distance is zero (estimate point is exactly on a data point)
+                if (distance < 1e-6) { // Use a small epsilon to check for near-zero distance
+                    totalWeightedValue = point.value; // If exactly on a point, its value is dominant
+                    totalWeight = 1; // Set weight to 1 to make it the only contributor
+                    return; // Exit early as this point's value is the result
+                }
+
+                const weight = 1 / Math.pow(distance, power);
+                totalWeightedValue += point.value * weight;
+                totalWeight += weight;
+            });
+
+            if (totalWeight === 0) {
+                // This case should ideally not happen if there are data points and distances > 0
+                // But as a fallback, return the average or a default value
+                return dataPoints.reduce((sum, p) => sum + p.value, 0) / dataPoints.length;
+            }
+
+            return totalWeightedValue / totalWeight;
+        }
+
+
+        // Function to draw everything
+        function draw() {
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw data points and their values
+            dataPoints.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = 'green';
+                ctx.fill();
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Draw text value with WHITE fill and BLACK stroke for visibility
+                ctx.font = 'bold 12px Arial'; // Slightly larger font
+                ctx.textAlign = 'left'; // Align text to the left of the new position
+                ctx.textBaseline = 'middle';
+
+                const textOffsetX = 12; // Offset text to the right of the point
+                const textOffsetY = 0; // Keep vertical alignment
+
+                // Black stroke for the text
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 3; // Thicker stroke for better visibility
+                ctx.strokeText(point.value.toString(), point.x + textOffsetX, point.y + textOffsetY);
+
+                // White fill for the text
+                ctx.fillStyle = 'white'; // Changed to white
+                ctx.fillText(point.value.toString(), point.x + textOffsetX, point.y + textOffsetY);
+            });
+
+            // Draw influence circles around data points
+            dataPoints.forEach(point => {
+                const dx = estimatePoint.x - point.x;
+                const dy = estimatePoint.y - point.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                const maxInfluenceRadius = 70;
+                const minDistanceForMaxInfluence = 50;
+
+                let influenceRadius;
+                if (distance < minDistanceForMaxInfluence) {
+                    influenceRadius = maxInfluenceRadius;
+                } else {
+                    influenceRadius = maxInfluenceRadius * (1 - (distance - minDistanceForMaxInfluence) / (Math.max(canvas.width, canvas.height) - minDistanceForMaxInfluence));
+                    influenceRadius = Math.max(0, influenceRadius);
+                }
+
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, influenceRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = 'orange';
+                ctx.fillStyle = 'rgba(255, 165, 0, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+            });
+
+            // Draw the point to estimate (mouse cursor)
+            ctx.beginPath();
+            ctx.arc(estimatePoint.x, estimatePoint.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = 'blue';
+            ctx.fill();
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Calculate and display the interpolated value next to the blue point
+            const interpolatedValue = calculateIDW(estimatePoint.x, estimatePoint.y, dataPoints, IDW_POWER);
+            const interpolatedText = `Valor: ${interpolatedValue.toFixed(1)}`;
+
+            // Position for the interpolated value text
+            const interpolatedTextOffsetX = 18; // Increased offset to the right
+            const interpolatedTextOffsetY = -15; // Offset slightly above the blue point
+
+            ctx.font = 'bold 16px Arial'; // Increased font size for interpolated value
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+
+            // Black stroke for the interpolated text (new requirement)
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 4; // Thicker stroke for better visibility
+            ctx.strokeText(interpolatedText, estimatePoint.x + interpolatedTextOffsetX, estimatePoint.y + interpolatedTextOffsetY);
+
+            // Green fill for the interpolated text
+            ctx.fillStyle = '#FF0000'; // Green color
+            ctx.fillText(interpolatedText, estimatePoint.x + interpolatedTextOffsetX, estimatePoint.y + interpolatedTextOffsetY);
+        }
+
+        // Update the position of the estimate point when the mouse moves
+        canvas.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            estimatePoint.x = event.clientX - rect.left;
+            estimatePoint.y = event.clientY - rect.top;
+            draw(); // Redraw the canvas
+        });
+
+        // Draw initially
+        draw();
+    </script>
+</body>
+</html>
